@@ -70,7 +70,7 @@ bool tms::TomcatWebApplication::initializeConfig(int _http, int _shut) {
         path filePath = fileItr->path();
         std::string fileName = filePath.filename().string();
 
-        if (fileName != "server.xml") {
+        if (fileName != "server.xml" && boost::filesystem::is_regular_file(filePath)) {
             path targetFilePath = conf;
             targetFilePath.append(fileName);
             boost::filesystem::copy_file(filePath, targetFilePath, boost::filesystem::copy_option::overwrite_if_exists);
