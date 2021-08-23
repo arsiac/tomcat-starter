@@ -14,7 +14,6 @@ namespace tms {
         typedef boost::filesystem::directory_iterator BoostDirIterator;
     private:
         static const BoostDirIterator end;
-        static Logger *log;
 
     public:
         bool static checkFile(const BoostPath &path);

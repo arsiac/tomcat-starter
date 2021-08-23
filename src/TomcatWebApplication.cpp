@@ -121,18 +121,13 @@ bool tms::TomcatWebApplication::createWebApplicationConfig(std::vector<WebApplic
 
         std::string appContext(TOMCAT_APP_TEMPLATE);
         StringUtils::replaceAll(appContext, VARIABLE_CONTEXT_PATH, app.getContext());
-        StringUtils::replaceAll(appContext, VARIABLE_APP_PATH, targetAppPath.string());
+        StringUtils::replaceAll(appContext, VARIABLE_APP_PATH, app.getWar().string());
 
         // write config file
         log->debug(app.getName() + " context xml configuration:") << appContext << std::endl;
         file.open(storePath.string());
         file << appContext;
         file.close();
-
-        // copy war
-        log->debug() << "copy war:" << app.getWar().generic_string() << std::endl;
-        boost::filesystem::copy_file(app.getWar(), targetAppPath,
-                                     boost::filesystem::copy_option::overwrite_if_exists);
     }
     return true;
 }
