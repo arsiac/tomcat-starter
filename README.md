@@ -63,9 +63,9 @@ xxx = xxx_context|/path/to/xxx.war
 
 #### `[global]`
 
-- `log_level`: 日志级别
+- `log_level`: log output level.
 
-- `cache_dir`: 缓存目录
+- `cache_dir`: web documents cache directory.
 
 #### `[global]`, `[project "name"]`
 
