@@ -1,34 +1,21 @@
-//
-// Created by arsia on 2021/8/15.
-//
+#pragma once
 
-#ifndef TMS_TMSDEF_H
-#define TMS_TMSDEF_H
-#include <string>
+/**
+ * ${USER_HOME}/.tms
+ */
+extern const char *CONFIG_DIRECTORY;
 
-extern const std::string CG_GLOBAL_HTTP;
-extern const std::string CG_GLOBAL_SHUT;
-extern const std::string CG_GLOBAL_JVM_OPTS;
+/**
+ * config.ini
+ */
+extern const char *CONFIG_FILE_NAME;
 
-extern const std::string CG_GROUP_COMMON;
-extern const std::string CG_COMMON_LOG_LEVEL;
-extern const std::string CG_COMMON_JAVA_HOME;
-extern const std::string CG_COMMON_TOMCAT;
+/**
+ * <Context>
+ */
+extern const char *TOMCAT_CONTEXT_TEMPLATE;
 
-extern const std::string CG_WEB_CONTEXT_SUFFIX;
-extern const std::string CG_WEB_WAR_SUFFIX;
-
-extern const std::string ENV_JAVA_HOME;
-extern const std::string ENV_JAVA_OPTS;
-
-extern const char *CG_TEMPLATE;
-
+/**
+ * server.xml
+ */
 extern const char *TOMCAT_SERVER_TEMPLATE;
-
-extern const char *TOMCAT_APP_TEMPLATE;
-
-extern const char *TOMCAT_ENV_CMD;
-
-extern const char *TOMCAT_CATALINA_CMD;
-
-#endif //TMS_TMSDEF_H

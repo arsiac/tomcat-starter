@@ -1,4 +1,7 @@
-*.ini
-/cmake*
-/.idea
-
+/.vscode/
+/.vs/
+/build/
+/out/
+*.exe
+*.out
+CMakeSettings.json
