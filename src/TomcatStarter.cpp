@@ -14,6 +14,16 @@ int main(int argc, const char *argv[]) {
     }
 
     Project project = configuration.getProject(args.projectName());
+    if (!args.httpPort().empty()) {
+        project.httpPort(args.httpPort());
+    }
+    if (!args.serverPort().empty()) {
+        project.serverPort(args.serverPort());
+    }
+    if (!args.jpdaPort().empty()) {
+        project.jpdaPort(args.jpdaPort());
+    }
+
     Tomcat tomcat(project, configuration.baseCache(), configuration.logLevel());
     tomcat.debugMode(args.debugMode());
     tomcat.otherWindow(args.otherWindow());

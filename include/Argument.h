@@ -20,8 +20,6 @@ public:
     static const char *CLI_VERSION;
     static const char *CLI_CLEAN_LONG;
 
-    static const char *VAL_INVALID_PORT;
-
 private:
     static const char *VERSION;
     static const char *CONFIG_TEMPLATE;

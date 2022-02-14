@@ -17,8 +17,6 @@ const char *Argument::CLI_VERSION = "--version";
 const char *Argument::CLI_CONFIG_TEMPLATE = "--config-template";
 const char *Argument::CLI_CLEAN_LONG = "--clean";
 
-const char *Argument::VAL_INVALID_PORT = "0";
-
 const char *Argument::VERSION = "tms version 2.0.0-beta";
 
 const char *Argument::CONFIG_TEMPLATE =
@@ -69,9 +67,9 @@ Argument::Argument(int argc, const char *argv[]) {
     _debugMode = false;
     _newWindow = false;
     _valid = true;
-    _httpPort = VAL_INVALID_PORT;
-    _serverPort = VAL_INVALID_PORT;
-    _jpdaPort = VAL_INVALID_PORT;
+    _httpPort = "";
+    _serverPort = "";
+    _jpdaPort = "";
     _project = "";
     analyze(argc, argv);
 }

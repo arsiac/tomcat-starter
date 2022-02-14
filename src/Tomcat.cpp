@@ -81,7 +81,7 @@ bool Tomcat::checkCache() {
     }
 
     std::string tmsCacheDir = _cacheBase + FILE_SEPARATOR + CACHE_DIRECTORY;
-    if (!checkOrCreateDirectory(_projectCache)) {
+    if (!checkOrCreateDirectory(tmsCacheDir)) {
         return false;
     }
 
@@ -238,6 +238,7 @@ void Tomcat::run(const std::list<std::string> &docList) {
     commandLine.addEnvironment("CATALINA_HOME", _project.tomcat());
     commandLine.addEnvironment("CATALINA_BASE", _projectCache);
     if (_debugMode) {
+        logger->debug("open Tomcat debug mode, using port " + _project.jpdaPort());
         commandLine.addEnvironment("JPDA_ADDRESS", "0.0.0.0:" + _project.jpdaPort());
         commandLine.addParamter("jpda");
     }
