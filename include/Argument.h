@@ -56,19 +56,19 @@ private:
 public:
     Argument(int argc, const char *argv[]);
 
-    std::string getProject() const;
+    std::string projectName() const;
 
-    std::list<std::string> getDocList() const;
+    std::list<std::string> docList() const;
 
-    std::string getHttpPort() const;
+    std::string httpPort() const;
 
-    std::string getServerPort() const;
+    std::string serverPort() const;
 
-    std::string getJpdaPort() const;
+    std::string jpdaPort() const;
 
-    bool isDebugMode() const;
+    bool debugMode() const;
 
-    bool isNewWindow() const;
+    bool otherWindow() const;
 
     bool isValid() const;
 

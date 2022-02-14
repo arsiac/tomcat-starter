@@ -57,21 +57,21 @@ public:
 
     bool isValid();
 
-    LogLevel getLogLevel() const;
+    LogLevel logLevel() const;
 
-    std::string getJavaHome() const;
+    std::string javaHome() const;
 
-    std::string getJavaOpts() const;
+    std::string javaOpts() const;
 
-    std::string getTomcat() const;
+    std::string tomcat() const;
 
-    std::string getHttpPort() const;
+    std::string httpPort() const;
 
-    std::string getServerPort() const;
+    std::string serverPort() const;
 
-    std::string getJpdaPort() const;
+    std::string jpdaPort() const;
 
-    std::string getCache() const;
+    std::string baseCache() const;
 
     Project getProject(const std::string &name);
 };

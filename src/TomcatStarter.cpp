@@ -10,12 +10,14 @@ int main(int argc, const char *argv[]) {
 
     Configuration configuration;
     if (args.isClean()) {
-        return clean(configuration.getCache() + FILE_SEPARATOR + "tms_cache") ? 0 : 1;
+        return clean(configuration.baseCache() + FILE_SEPARATOR + CACHE_DIRECTORY) ? 0 : 1;
     }
 
-    Project project = configuration.getProject(args.getProject());
-    Tomcat tomcat(project, configuration.getCache(), configuration.getLogLevel());
-    tomcat.run(args.getDocList(), args.isDebugMode(), args.isNewWindow());
+    Project project = configuration.getProject(args.projectName());
+    Tomcat tomcat(project, configuration.baseCache(), configuration.logLevel());
+    tomcat.debugMode(args.debugMode());
+    tomcat.otherWindow(args.otherWindow());
+    tomcat.run(args.docList());
     return 0;
 }
 

@@ -15,11 +15,13 @@ private:
 
     std::string _projectCache;
 
-    std::string _javaExe;
-
     std::string _catalinaExe;
 
     std::string _contextDir;
+
+    bool _debugMode;
+
+    bool _otherWindow;
 
     bool check();
 
@@ -41,10 +43,12 @@ private:
 
     bool cleanContextDirectory();
 
-    bool createContext(WebDocument doc);
+    bool createContext(const WebDocument &doc);
 
 public:
     Tomcat(const Project &project, const std::string &cacheBase, LogLevel level);
     ~Tomcat();
-    void run(std::list<std::string> docList, bool enableDebugMode, bool openInNewWindow);
+    void debugMode(bool enable);
+    void otherWindow(bool enable);
+    void run(const std::list<std::string> &docList);
 };

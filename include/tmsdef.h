@@ -6,6 +6,21 @@
 extern const char *CONFIG_DIRECTORY;
 
 /**
+ * tms_cache
+ */
+extern const char *CACHE_DIRECTORY;
+
+/**
+ * bin
+ */
+extern const char *BIN_DIRECTORY;
+
+/**
+ * conf
+ */
+extern const char *CONF_DIRECTORY;
+
+/**
  * config.ini
  */
 extern const char *CONFIG_FILE_NAME;

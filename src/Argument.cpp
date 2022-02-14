@@ -19,7 +19,7 @@ const char *Argument::CLI_CLEAN_LONG = "--clean";
 
 const char *Argument::VAL_INVALID_PORT = "0";
 
-const char *Argument::VERSION = "2.0.0-beta";
+const char *Argument::VERSION = "tms version 2.0.0-beta";
 
 const char *Argument::CONFIG_TEMPLATE =
     "; ${HOME}/.tms/config.ini\n"
@@ -47,6 +47,7 @@ const char *Argument::CONFIG_TEMPLATE =
     "server_port = xxx\n"
     "jpda_port = xxx\n\n"
     "[web \"web\"]\n"
+    "; name = contextPath|webDocumentPath\n"
     "war1 = war1|/path/to/xxx.war\n"
     "xxx = xxx_context|/path/to/xxx.war\n";
 
@@ -54,10 +55,13 @@ const char *Argument::USAGE = "Usage: tms [OPTION]...\n"
                               "Run or debug web project by tomcat.\n\n"
                               "Mandatory arguments to long options are mandatory for short options too.\n"
                               "-p, --project         project name.\n"
-                              "-w, --web-document    packages that need to be run.\n"
+                              "-w, --web-document    web doc that need to be run.\n"
                               "-d, --debug-mode      open tomcat jpda mode.\n"
                               "-n, --new-window      run web project in new window.\n"
-                              "--config-template     show configuration template.\n"
+                              "--http-port           Tomcat HTTP port.\n"
+                              "--server-port         Tomcat Server port.\n"
+                              "--jpda-port           Tomcat JPDA port.\n"
+                              "--config-template     show configuration file template.\n"
                               "--clean               clean cache directory.\n"
                               "--version             Tomcat Starter version.\n";
 
@@ -192,19 +196,19 @@ int Argument::resolve(const char *current, const char *next) {
     return -1;
 }
 
-std::string Argument::getProject() const { return this->_project; }
+std::string Argument::projectName() const { return this->_project; }
 
-std::list<std::string> Argument::getDocList() const { return this->_docList; }
+std::list<std::string> Argument::docList() const { return this->_docList; }
 
-std::string Argument::getHttpPort() const { return this->_httpPort; }
+std::string Argument::httpPort() const { return this->_httpPort; }
 
-std::string Argument::getServerPort() const { return this->_serverPort; }
+std::string Argument::serverPort() const { return this->_serverPort; }
 
-std::string Argument::getJpdaPort() const { return this->_jpdaPort; }
+std::string Argument::jpdaPort() const { return this->_jpdaPort; }
 
-bool Argument::isDebugMode() const { return this->_debugMode; }
+bool Argument::debugMode() const { return this->_debugMode; }
 
-bool Argument::isNewWindow() const { return this->_newWindow; }
+bool Argument::otherWindow() const { return this->_newWindow; }
 
 bool Argument::isValid() const { return this->_valid; }
 

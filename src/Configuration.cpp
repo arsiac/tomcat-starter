@@ -128,21 +128,21 @@ LogLevel Configuration::resolveLogLevel(const std::string &name) {
 
 bool Configuration::isValid() { return _valid; }
 
-LogLevel Configuration::getLogLevel() const { return _logLevel; }
+LogLevel Configuration::logLevel() const { return _logLevel; }
 
-std::string Configuration::getJavaHome() const { return _javaHome; }
+std::string Configuration::javaHome() const { return _javaHome; }
 
-std::string Configuration::getJavaOpts() const { return _javaOpts; }
+std::string Configuration::javaOpts() const { return _javaOpts; }
 
-std::string Configuration::getTomcat() const { return _tomcat; }
+std::string Configuration::tomcat() const { return _tomcat; }
 
-std::string Configuration::getHttpPort() const { return _httpPort; }
+std::string Configuration::httpPort() const { return _httpPort; }
 
-std::string Configuration::getServerPort() const { return _serverPort; }
+std::string Configuration::serverPort() const { return _serverPort; }
 
-std::string Configuration::getJpdaPort() const { return _jpdaPort; }
+std::string Configuration::jpdaPort() const { return _jpdaPort; }
 
-std::string Configuration::getCache() const { return _cache; }
+std::string Configuration::baseCache() const { return _cache; }
 
 Project Configuration::getProject(const std::string &name) {
     Project project;

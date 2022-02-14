@@ -15,6 +15,10 @@ Tomcat::Tomcat(const Project &project, const std::string &cacheBase, LogLevel le
 
 Tomcat::~Tomcat() { delete logger; }
 
+void Tomcat::debugMode(bool enable) { _debugMode = enable; }
+
+void Tomcat::otherWindow(bool enable) { _otherWindow = enable; }
+
 bool Tomcat::check() { return checkJavaHome() && checkTomcat() && checkWebDocument() && checkCache(); }
 
 bool Tomcat::checkJavaHome() {
@@ -27,10 +31,10 @@ bool Tomcat::checkJavaHome() {
     }
 
     // check java
-    _javaExe = _project.javaHome() + FILE_SEPARATOR + "bin" + FILE_SEPARATOR + JAVA_EXECUTABLE;
-    if (fileNotExists(_javaExe)) {
+    std::string javaExe = _project.javaHome() + FILE_SEPARATOR + BIN_DIRECTORY + FILE_SEPARATOR + JAVA_EXECUTABLE;
+    if (fileNotExists(javaExe)) {
         logger->error("the java_home configuration error, the '" + std::string(JAVA_EXECUTABLE) +
-                      "' executable could not be found: " + _javaExe);
+                      "' executable could not be found: " + javaExe);
         return false;
     }
 
@@ -47,7 +51,7 @@ bool Tomcat::checkTomcat() {
     }
 
     // check catalina
-    _catalinaExe = _project.tomcat() + FILE_SEPARATOR + "bin" + FILE_SEPARATOR + CATALINA_EXECUTABLE;
+    _catalinaExe = _project.tomcat() + FILE_SEPARATOR + BIN_DIRECTORY + FILE_SEPARATOR + CATALINA_EXECUTABLE;
     if (fileNotExists(_catalinaExe)) {
         logger->error("the tomcat configuration error, the '" + std::string(CATALINA_EXECUTABLE) +
                       "' executable could not be found: " + _catalinaExe);
@@ -76,12 +80,12 @@ bool Tomcat::checkCache() {
         return false;
     }
 
-    _projectCache = _cacheBase + FILE_SEPARATOR + "tms_cache";
+    std::string tmsCacheDir = _cacheBase + FILE_SEPARATOR + CACHE_DIRECTORY;
     if (!checkOrCreateDirectory(_projectCache)) {
         return false;
     }
 
-    _projectCache = _projectCache + FILE_SEPARATOR + _project.name();
+    _projectCache = tmsCacheDir + FILE_SEPARATOR + _project.name();
     if (!checkOrCreateDirectory(_projectCache)) {
         return false;
     }
@@ -92,6 +96,7 @@ bool Tomcat::checkCache() {
 }
 
 bool Tomcat::checkOrCreateDirectory(const std::string &path) {
+    logger->debug("check directory: " + path);
     if (fileNotExists(path)) {
         logger->debug("create directory: " + path);
         int res = _mkdir(path.c_str());
@@ -106,8 +111,8 @@ bool Tomcat::checkOrCreateDirectory(const std::string &path) {
 
 bool Tomcat::copyTomcatFiles() {
     // copy configuration files
-    std::string tomcatConfDir = _project.tomcat() + FILE_SEPARATOR + "conf";
-    std::string cacheConfDir = _projectCache + FILE_SEPARATOR + "conf";
+    std::string tomcatConfDir = _project.tomcat() + FILE_SEPARATOR + CONF_DIRECTORY;
+    std::string cacheConfDir = _projectCache + FILE_SEPARATOR + CONF_DIRECTORY;
     if (fileNotExists(cacheConfDir) && !copyDirectory(tomcatConfDir, cacheConfDir, false)) {
         return false;
     }
@@ -115,7 +120,7 @@ bool Tomcat::copyTomcatFiles() {
 }
 
 bool Tomcat::createServerXml() {
-    std::string serverXmlFile = _projectCache + FILE_SEPARATOR + "conf" + FILE_SEPARATOR + "server.xml";
+    std::string serverXmlFile = _projectCache + FILE_SEPARATOR + CONF_DIRECTORY + FILE_SEPARATOR + "server.xml";
     std::string serverTemplate(TOMCAT_SERVER_TEMPLATE);
 
     std::string serverPort = "${server-port}";
@@ -140,7 +145,7 @@ bool Tomcat::createServerXml() {
 
 bool Tomcat::generateContextDirectory() {
     const char fs = FILE_SEPARATOR;
-    _contextDir = _projectCache + FILE_SEPARATOR + "conf" + FILE_SEPARATOR + "Catalina";
+    _contextDir = _projectCache + FILE_SEPARATOR + CONF_DIRECTORY + FILE_SEPARATOR + "Catalina";
     if (!checkOrCreateDirectory(_contextDir)) {
         return false;
     }
@@ -165,7 +170,7 @@ bool Tomcat::cleanContextDirectory() {
     return res;
 }
 
-bool Tomcat::createContext(WebDocument doc) { 
+bool Tomcat::createContext(const WebDocument &doc) { 
     std::string contextXmlFile = _contextDir + FILE_SEPARATOR + doc.context() + ".xml";
     std::string contextTemplate(TOMCAT_CONTEXT_TEMPLATE);
     std::string context = "${context-path}";
@@ -186,7 +191,7 @@ bool Tomcat::createContext(WebDocument doc) {
     return true; 
 }
 
-void Tomcat::run(std::list<std::string> docList, bool enableDebugMode, bool openInNewWindow) {
+void Tomcat::run(const std::list<std::string> &docList) {
     if (!_project.isPresent()) {
         logger->error("project " + _project.name() + " is not avaliable.");
         return;
@@ -232,11 +237,11 @@ void Tomcat::run(std::list<std::string> docList, bool enableDebugMode, bool open
     commandLine.addEnvironment("JAVA_OPTS", _project.javaOpts());
     commandLine.addEnvironment("CATALINA_HOME", _project.tomcat());
     commandLine.addEnvironment("CATALINA_BASE", _projectCache);
-    if (enableDebugMode) {
+    if (_debugMode) {
         commandLine.addEnvironment("JPDA_ADDRESS", "0.0.0.0:" + _project.jpdaPort());
         commandLine.addParamter("jpda");
     }
-    commandLine.addParamter(openInNewWindow ? "start" : "run");
+    commandLine.addParamter(_otherWindow ? "start" : "run");
 
     std::string command = commandLine.build();
     logger->debug("command: " + command);
