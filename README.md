@@ -16,6 +16,17 @@ tms -p xxx_project -w war1 -w war2 -w war3 -n
 
 - `--new-windows`, `-n`: open in new window
 
+- `--http-port`, `--server-port`, `--jpda-port`
+
+  ```
+  # command line > 'project' node > 'global' node
+  --http-port > [project ""]http_port > [global]http_port
+  --server-port > [project ""]server_port > [global]server_port
+  --jpda-port > [project ""]jpda_port > [global]jpda_port
+  ```
+
+  
+
 - `--config-template`: configuration file template
 
 - `--clean`: clean cache directory
@@ -28,7 +39,7 @@ tms -p xxx_project -w war1 -w war2 -w war3 -n
 
 ``` ini
 Linux: ${HOME}/.tms/config.ini
-Windows: $env:USERPROFILE#.tms#config.ini
+Windows: $env:USERPROFILE\.tms\config.ini
 ```
 
 ### Template
