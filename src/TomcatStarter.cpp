@@ -32,6 +32,9 @@ int main(int argc, const char *argv[]) {
 }
 
 bool clean(const std::string& dir) {
+    if (fileNotExists(dir)) {
+        return true;
+    }
     bool res = removeAllChildren(dir);
     if (!res) {
         std::cerr << "error: clean cache directory failed: " << dir << std::endl;

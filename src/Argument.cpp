@@ -66,6 +66,7 @@ const char *Argument::USAGE = "Usage: tms [OPTION]...\n"
 Argument::Argument(int argc, const char *argv[]) {
     _debugMode = false;
     _newWindow = false;
+    _clean = false;
     _valid = true;
     _httpPort = "";
     _serverPort = "";
@@ -103,6 +104,12 @@ void Argument::analyze(int argc, const char *argv[]) {
         return;
     }
 
+    
+    if (0 == strcmp(CLI_CLEAN_LONG, argv[1])) {
+        this->_clean = true;
+        return;
+    }
+
     // show version
     if (0 == strcmp(CLI_VERSION, argv[1])) {
         _valid = false;
@@ -124,10 +131,6 @@ void Argument::analyze(int argc, const char *argv[]) {
             return;
         }
 
-        if (res == -2) {
-            return;
-        }
-
         i += res;
     }
 
@@ -135,10 +138,6 @@ void Argument::analyze(int argc, const char *argv[]) {
 }
 
 int Argument::resolve(const char *current, const char *next) {
-    if (checkOption(CLI_CLEAN_LONG, nullptr, current)) {
-        this->_clean = true;
-        return -2;
-    }
     if (checkOption(CLI_PROJECT_LONG, CLI_PROJECT, current)) {
         this->_project = next;
         return 1;

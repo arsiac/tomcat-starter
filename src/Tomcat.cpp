@@ -170,15 +170,16 @@ bool Tomcat::cleanContextDirectory() {
     return res;
 }
 
-bool Tomcat::createContext(const WebDocument &doc) { 
-    std::string contextXmlFile = _contextDir + FILE_SEPARATOR + doc.context() + ".xml";
+bool Tomcat::createContext(const WebDocument &doc) {
+    std::string contextName = doc.context().at(0) == '/' ? doc.context().substr(1) : doc.context();
+    std::string contextXmlFile = _contextDir + FILE_SEPARATOR + contextName + ".xml";
     std::string contextTemplate(TOMCAT_CONTEXT_TEMPLATE);
     std::string context = "${context-path}";
     std::string docBase = "${web-document}";
     contextTemplate.replace(contextTemplate.find(context), context.size(), doc.context());
     contextTemplate.replace(contextTemplate.find(docBase), docBase.size(), doc.path());
 
-    logger->debug("generate " + doc.context() + ".xml: \n" + contextTemplate);
+    logger->debug("generate " + contextName + ".xml: \n" + contextTemplate);
     // write ${context}.xml
     logger->debug("write context XML: " + contextXmlFile);
     std::ofstream out(contextXmlFile);

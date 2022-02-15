@@ -9,7 +9,7 @@ void WebDocument::path(const std::string &path) { _path = path; }
 std::string WebDocument::path() const { return _path; }
 
 WebDocument::WebDocument(const std::string &context, const std::string &path) {
-    _context = context;
+    _context = context.at(0) != '/' ? '/' + context : context;
     _path = path;
 }
 
