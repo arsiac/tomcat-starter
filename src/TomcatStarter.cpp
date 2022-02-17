@@ -1,4 +1,4 @@
-﻿#include "TomcatStarter.h"
+#include "TomcatStarter.h"
 
 bool clean(const std::string &dir);
 

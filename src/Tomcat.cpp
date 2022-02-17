@@ -1,10 +1,10 @@
 #include "Tomcat.h"
+#include "CommandLine.h"
+#include "file.h"
 #include "os.h"
 #include "tmsdef.h"
-#include "file.h"
-#include "CommandLine.h"
-#include <direct.h>
 #include <cstring>
+#include <direct.h>
 #include <fstream>
 
 Tomcat::Tomcat(const Project &project, const std::string &cacheBase, LogLevel level) {
@@ -189,7 +189,7 @@ bool Tomcat::createContext(const WebDocument &doc) {
     }
     out << contextTemplate;
     out.close();
-    return true; 
+    return true;
 }
 
 void Tomcat::run(const std::list<std::string> &docList) {
@@ -218,7 +218,7 @@ void Tomcat::run(const std::list<std::string> &docList) {
     if (!cleanContextDirectory()) {
         return;
     }
-    
+
     auto webMap = _project.webMap();
     for (auto &item : docList) {
         auto pair = webMap.find(item);
