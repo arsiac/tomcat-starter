@@ -3,10 +3,11 @@
 CommandLine::CommandLine(const std::string &executable) { _executable = executable; }
 
 void CommandLine::addEnvironment(const std::string &key, const std::string &value) {
-    std::string env = value.empty() ? key + "=" : key + "=" + value;
 #if defined(WIN32) || defined(WIN64)
+    std::string env = value.empty() ? key + "=" : key + "=" + value;
     _environmentList.push_back("set " + env);
 #else
+    std::string env = value.empty() ? key + "=''" : key + "='" + value +'\'';
     _environmentList.push_back(env);
 #endif
 }
