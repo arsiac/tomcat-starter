@@ -34,7 +34,7 @@ const char *Argument::CONFIG_TEMPLATE =
 #if defined(WIN32) || defined(WIN64)
     "cache_dir = $env:USERPROFILE\\.tms\n\n"
 #else
-    "cache_dir = $env:HONE/.tms\n\n"
+    "cache_dir = $env:HOME/.tms\n\n"
 #endif
 
     "[project \"web\"]\n"
