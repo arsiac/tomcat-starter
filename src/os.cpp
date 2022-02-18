@@ -1,6 +1,6 @@
 #include "os.h"
 
-#if defined(WIN32) || defined(WIN64)
+#ifdef WIN32
 const char FILE_SEPARATOR = '\\';
 const char PATH_SEPARATOR = ';';
 const char *S_FILE_SEPARATOR = "\\";

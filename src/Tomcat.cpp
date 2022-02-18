@@ -4,7 +4,6 @@
 #include "os.h"
 #include "tmsdef.h"
 #include <cstring>
-#include <direct.h>
 #include <fstream>
 
 Tomcat::Tomcat(const Project &project, const std::string &cacheBase, LogLevel level) {
@@ -99,8 +98,7 @@ bool Tomcat::checkOrCreateDirectory(const std::string &path) {
     logger->debug("check directory: " + path);
     if (fileNotExists(path)) {
         logger->debug("create directory: " + path);
-        int res = _mkdir(path.c_str());
-        if (res != 0) {
+        if (!makeDirectory(path)) {
             logger->error("create directory failed: " + path);
             return false;
         }
