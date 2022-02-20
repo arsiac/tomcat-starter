@@ -17,7 +17,7 @@ bool copyDirectory(const std::string &source, const std::string &target, bool re
         return false;
     }
 
-    if (fileNotExists(target) && 0 != makeDirectory(target)) {
+    if (fileNotExists(target) && !makeDirectory(target)) {
         return false;
     }
 

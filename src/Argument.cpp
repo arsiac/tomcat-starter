@@ -23,7 +23,7 @@ const char *Argument::CONFIG_TEMPLATE =
     "; ${HOME}/.tms/config.ini\n"
     "[global]\n"
     "; debug, info, warn, error and close\n"
-    "log_level = warn\n"
+    "log_level = info\n"
     "java_home = $env:JAVA_HOME\n"
     "java_opts = $env:JAVA_OPTS -XX:+HeapDumpOnOutOfMemoryError -XX:-OmitStackTraceInFastThrow\n"
     "tomcat = $env:CATALINA_HOME\n"
