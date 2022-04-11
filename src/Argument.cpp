@@ -17,7 +17,7 @@ const char *Argument::CLI_VERSION = "--version";
 const char *Argument::CLI_CONFIG_TEMPLATE = "--config-template";
 const char *Argument::CLI_CLEAN_LONG = "--clean";
 
-const char *Argument::VERSION = "tms version 2.0.0-beta";
+const char *Argument::VERSION = "2.0.0-beta";
 
 const char *Argument::CONFIG_TEMPLATE =
     "; ${HOME}/.tms/config.ini\n"
@@ -32,8 +32,10 @@ const char *Argument::CONFIG_TEMPLATE =
     "jpda_port = 5005\n"
 
 #if defined(WIN32) || defined(WIN64)
+    "; include_dirs = $env:USERPROFILE\\.tms\\config,$env:USERPROFILE\\.tms\\xxx\n"
     "cache_dir = $env:USERPROFILE\\.tms\n\n"
 #else
+    "; include_dir = $env:HOME\\.tms\\config,$env:HOME\\.tms\\xxx\n"
     "cache_dir = $env:HOME/.tms\n\n"
 #endif
 
@@ -113,7 +115,7 @@ void Argument::analyze(int argc, const char *argv[]) {
     // show version
     if (0 == strcmp(CLI_VERSION, argv[1])) {
         _valid = false;
-        std::cout << VERSION << std::endl;
+        std::cout << "tms version " << VERSION << std::endl;
         return;
     }
 

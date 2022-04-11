@@ -29,7 +29,7 @@ private:
 
     bool checkTomcat();
 
-    bool checkWebDocument();
+    bool checkWebDocument(const std::string &name, const WebDocument &doc);
 
     bool checkCache();
 

@@ -18,7 +18,7 @@ void Tomcat::debugMode(bool enable) { _debugMode = enable; }
 
 void Tomcat::otherWindow(bool enable) { _otherWindow = enable; }
 
-bool Tomcat::check() { return checkJavaHome() && checkTomcat() && checkWebDocument() && checkCache(); }
+bool Tomcat::check() { return checkJavaHome() && checkTomcat() && checkCache(); }
 
 bool Tomcat::checkJavaHome() {
     logger->info("Java Home: " + _project.javaHome());
@@ -60,14 +60,12 @@ bool Tomcat::checkTomcat() {
     return true;
 }
 
-bool Tomcat::checkWebDocument() {
+bool Tomcat::checkWebDocument(const std::string &name, const WebDocument &doc) {
     // check web document
-    for (auto &item : _project.webMap()) {
-        logger->debug("check web document \"" + item.first + "\": " + item.second.path());
-        if (fileNotExists(item.second.path())) {
-            logger->error("web document \"" + item.first + "\" not exists: " + item.second.path());
-            return false;
-        }
+    logger->debug("check web document \"" + name + "\": " + doc.path());
+    if (fileNotExists(doc.path())) {
+        logger->error("web document \"" + name + "\" not exists: " + doc.path());
+        return false;
     }
     return true;
 }
@@ -224,6 +222,11 @@ void Tomcat::run(const std::list<std::string> &docList) {
             logger->error("web document not exists: " + item);
             return;
         }
+
+        if (!checkWebDocument(pair->first, pair->second)) {
+            return;
+        }
+
         if (!createContext(pair->second)) {
             logger->error("create context failed: " + item);
             return;
