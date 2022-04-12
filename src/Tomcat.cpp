@@ -109,7 +109,7 @@ bool Tomcat::copyTomcatFiles() {
     // copy configuration files
     std::string tomcatConfDir = _project.tomcat() + FILE_SEPARATOR + CONF_DIRECTORY;
     std::string cacheConfDir = _projectCache + FILE_SEPARATOR + CONF_DIRECTORY;
-    if (fileNotExists(cacheConfDir) && !copyDirectory(tomcatConfDir, cacheConfDir, false)) {
+    if (!copyDirectory(tomcatConfDir, cacheConfDir, false)) {
         return false;
     }
     return true;
