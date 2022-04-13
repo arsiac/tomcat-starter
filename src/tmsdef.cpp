@@ -5,7 +5,7 @@ const char *CACHE_DIRECTORY = "tms_cache";
 const char *BIN_DIRECTORY = "bin";
 const char *CONF_DIRECTORY = "conf";
 const char *CONFIG_FILE_NAME = "config.ini";
-const char *TOMCAT_CONTEXT_TEMPLATE = R"(<Context path="${context-path}" docBase="${web-document}" />)";
+const char *TOMCAT_CONTEXT_TEMPLATE = R"(<Context path="${context-path}" docBase="${web-document}" reloadable="true"/>)";
 const char *TOMCAT_SERVER_TEMPLATE =
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     "<Server port=\"${server-port}\" shutdown=\"SHUTDOWN\">\n"
