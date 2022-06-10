@@ -21,6 +21,11 @@ extern const char *BIN_DIRECTORY;
 extern const char *CONF_DIRECTORY;
 
 /**
+ * webapps
+ */
+extern const char *WEBAPP_DIRECTORY;
+
+/**
  * config.ini
  */
 extern const char *CONFIG_FILE_NAME;

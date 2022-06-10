@@ -62,7 +62,7 @@ bool Tomcat::checkTomcat() {
 
 bool Tomcat::checkWebDocument(const std::string &name, const WebDocument &doc) {
     // check web document
-    logger->debug("check web document \"" + name + "\": " + doc.path());
+    logger->info("check web document \"" + name + "\": " + doc.path());
     if (fileNotExists(doc.path())) {
         logger->error("web document \"" + name + "\" not exists: " + doc.path());
         return false;
@@ -88,7 +88,7 @@ bool Tomcat::checkCache() {
     }
 
     logger->info("Project Cache: " + _projectCache);
-
+    _webappDir = _projectCache + FILE_SEPARATOR + WEBAPP_DIRECTORY;
     return true;
 }
 
@@ -109,6 +109,7 @@ bool Tomcat::copyTomcatFiles() {
     // copy configuration files
     std::string tomcatConfDir = _project.tomcat() + FILE_SEPARATOR + CONF_DIRECTORY;
     std::string cacheConfDir = _projectCache + FILE_SEPARATOR + CONF_DIRECTORY;
+    logger->info("copy tomcat configuration files: " + tomcatConfDir);
     if (!copyDirectory(tomcatConfDir, cacheConfDir, false)) {
         return false;
     }
@@ -140,7 +141,6 @@ bool Tomcat::createServerXml() {
 }
 
 bool Tomcat::generateContextDirectory() {
-    const char fs = FILE_SEPARATOR;
     _contextDir = _projectCache + FILE_SEPARATOR + CONF_DIRECTORY + FILE_SEPARATOR + "Catalina";
     if (!checkOrCreateDirectory(_contextDir)) {
         return false;
@@ -154,7 +154,7 @@ bool Tomcat::generateContextDirectory() {
 }
 
 bool Tomcat::cleanContextDirectory() {
-    logger->debug("clean context directory: " + _contextDir);
+    logger->info("clean context directory: " + _contextDir);
     if (fileNotExists(_contextDir)) {
         logger->warn("clean context directory failed: directory not exists: " + _contextDir);
         return true;
@@ -162,6 +162,19 @@ bool Tomcat::cleanContextDirectory() {
     bool res = removeAllChildren(_contextDir);
     if (!res) {
         logger->error("clean context directory failed: " + _contextDir);
+    }
+    return res;
+}
+
+bool Tomcat::cleanWebappDirectory() { 
+    logger->info("clean webapps directory: " + _webappDir);
+    if (fileNotExists(_webappDir)) {
+        logger->warn("clean context directory failed: directory not exists: " + _webappDir);
+        return true;
+    }
+    bool res = removeAllChildren(_webappDir);
+    if (!res) {
+        logger->error("clean context directory failed: " + _webappDir);
     }
     return res;
 }
@@ -215,6 +228,10 @@ void Tomcat::run(const std::list<std::string> &docList) {
         return;
     }
 
+    if (!cleanWebappDirectory()) {
+        return;
+    }
+
     auto webMap = _project.webMap();
     for (auto &item : docList) {
         auto pair = webMap.find(item);
@@ -248,5 +265,6 @@ void Tomcat::run(const std::list<std::string> &docList) {
 
     std::string command = commandLine.build();
     logger->debug("command: " + command);
+    logger->info("The following is the log of Tomcat.");
     system(command.c_str());
 }

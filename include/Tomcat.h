@@ -19,6 +19,8 @@ private:
 
     std::string _contextDir;
 
+    std::string _webappDir;
+
     bool _debugMode;
 
     bool _otherWindow;
@@ -42,6 +44,8 @@ private:
     bool generateContextDirectory();
 
     bool cleanContextDirectory();
+
+    bool cleanWebappDirectory();
 
     bool createContext(const WebDocument &doc);
 
