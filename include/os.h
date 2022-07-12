@@ -1,4 +1,8 @@
 #pragma once
+/**
+ * OS name: windows, linux 
+ */
+extern const char *OS_NAME;
 
 /**
  * linux:   '/'

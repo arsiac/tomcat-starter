@@ -250,6 +250,23 @@ void Tomcat::run(const std::list<std::string> &docList) {
         }
     }
 
+    if (0 == strcmp("windows", OS_NAME)) {
+        std::string title = "title TMS: ";
+        title.append(_project.name());
+
+        int count = 0;
+        for (auto &item : docList) {
+            if (count == 0) {
+                title.append(" ").append(item);
+            } else {
+                title.append(",").append(item);
+            }
+            count++;
+        }
+        logger->debug("command: " + title);
+        system(title.c_str());
+    }
+
     CommandLine commandLine(_catalinaExe);
     commandLine.addEnvironment("JAVA_HOME", _project.javaHome());
     commandLine.addEnvironment("JRE_HOME", "");
