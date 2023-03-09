@@ -4,7 +4,7 @@ use crate::env_ini::{IniLoader, IniPathLoad, IniStrLoad};
 use crate::util::os_utils;
 use log::{debug, error, log_enabled, trace, warn, Level};
 use std::collections::{HashMap, HashSet};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::exit;
 use std::str::FromStr;
 
@@ -86,6 +86,34 @@ impl ProjectRuntime {
             server_port: None,
             jpda_port: None,
         }
+    }
+
+    pub fn get_java_home(&self) -> &Path {
+        self.java_home.as_ref().unwrap().as_path()
+    }
+
+    pub fn get_catalina_home(&self) -> &Path {
+        self.catalina_home.as_ref().unwrap().as_path()
+    }
+
+    pub fn get_catalina_base(&self) -> &Path {
+        self.catalina_base.as_ref().unwrap().as_path()
+    }
+
+    pub fn get_java_home_str(&self) -> &str {
+        self.java_home.as_ref().unwrap().to_str().unwrap()
+    }
+
+    pub fn get_catalina_home_str(&self) -> &str {
+        self.catalina_home.as_ref().unwrap().to_str().unwrap()
+    }
+
+    pub fn get_catalina_base_str(&self) -> &str {
+        self.catalina_base.as_ref().unwrap().to_str().unwrap()
+    }
+
+    pub fn get_java_opts_str(&self) -> &str {
+        self.java_opts.as_ref().unwrap().as_str()
     }
 }
 

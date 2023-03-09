@@ -5,6 +5,7 @@ use crate::config::project::{Project, ProjectItem};
 use crate::tomcat::CommandLineBuilder;
 use crate::tomcat::ServerXml;
 use crate::tomcat::Tomcat;
+use crate::util::file_utils;
 use log::{debug, error, info, log_enabled, warn, Level};
 use std::io;
 use std::io::BufRead;
@@ -117,18 +118,9 @@ impl RunAction {
                 "Run project '{}' with item {:?}",
                 &project.name, &items.names
             );
-            info!(
-                "JDK/JRE            : {}",
-                runtime.java_home.as_ref().unwrap().to_str().unwrap()
-            );
-            info!(
-                "JAVA_OPTS          : {}",
-                &runtime.java_opts.as_ref().unwrap()
-            );
-            info!(
-                "Tomcat             : {}",
-                runtime.catalina_home.as_ref().unwrap().to_str().unwrap()
-            );
+            info!("JDK/JRE            : {}", runtime.get_java_home_str());
+            info!("JAVA_OPTS          : {}", runtime.get_java_opts_str());
+            info!("Tomcat             : {}", runtime.get_catalina_home_str());
             info!("Tomcat Http Port   : {}", runtime.http_port.unwrap());
             info!("Tomcat Server Port : {}", runtime.server_port.unwrap());
             if self.argument.debug {
@@ -164,10 +156,9 @@ impl Actions for RunAction {
 
         // 输出环境信息
         self.output_runtime(&project, &items);
-        let java_home = runtime.java_home.as_ref().unwrap();
-        let cat_home = runtime.catalina_home.as_ref().unwrap();
-        let cat_base = runtime.catalina_base.as_ref().unwrap();
-        let tomcat = Tomcat::new(java_home.as_path(), cat_home.as_path(), cat_base.as_path());
+        let tomcat = Tomcat::new(runtime.get_java_home(),
+                                 runtime.get_catalina_home(),
+                                 runtime.get_catalina_base());
         tomcat.init_catalina_base();
 
         // 获取环境版本
@@ -195,13 +186,18 @@ impl Actions for RunAction {
         }
         tomcat.create_base_server_xml(&server_xml);
 
+        // 清除 Tomcat 缓存
+        info!("Clean Tomcat cache: {}", runtime.get_catalina_base_str());
+        let webapps = runtime.catalina_base.as_ref().unwrap().join("webapps");
+        file_utils::remove_items(webapps.as_path());
+
         let mut builder = CommandLineBuilder::new(&runtime_version, self.argument.separate);
 
-        builder
-            .with_java_home(java_home.as_path())
-            .with_catalina(cat_home.as_path(), cat_base.as_path());
+        builder.with_java_home(runtime.get_java_home())
+            .with_catalina(runtime.get_catalina_home(), runtime.get_catalina_home());
         if runtime.enable_logfile.unwrap() {
-            let logfile = cat_base.join("conf").join("logging.properties");
+            let logfile = runtime.catalina_base.as_ref().unwrap()
+                .join("conf").join("logging.properties");
             builder.with_log(Some(logfile.as_path()));
         } else {
             builder.with_log(None);

@@ -1,9 +1,10 @@
 use std::fs;
 use std::path::Path;
-use log::{debug, error, info, Level, log_enabled, trace};
+use log::{error, info, Level, log_enabled, trace};
 use crate::action::Actions;
 use crate::argument::{CleanTypeEnum, TmsArgActionClean};
 use crate::config::{TmsConfiguration};
+use crate::util::file_utils;
 
 pub struct CleanAction {
     argument: Box<TmsArgActionClean>,
@@ -28,7 +29,7 @@ impl CleanAction {
         }
 
         if clean_type == &CleanTypeEnum::All {
-            Self::remove_items(tc.cache_dir.as_path());
+            file_utils::remove_items(tc.cache_dir.as_path());
             return true;
         }
 
@@ -64,11 +65,11 @@ impl CleanAction {
         match clean_type {
             CleanTypeEnum::Cache => {
                 let path = cache_path.join("webapps");
-                Self::remove_items(path.as_path());
+                file_utils::remove_items(path.as_path());
             }
             CleanTypeEnum::Log => {
                 let path = cache_path.join("logs");
-                Self::remove_items(path.as_path());
+                file_utils::remove_items(path.as_path());
             }
             CleanTypeEnum::All => {
                 match fs::read_dir(cache_path) {
@@ -76,7 +77,7 @@ impl CleanAction {
                         for entry in dir {
                             match entry {
                                 Ok(entry) => {
-                                    Self::remove_dir(entry.path().as_path());
+                                    file_utils::remove_dir(entry.path().as_path());
                                 }
                                 Err(e) => {
                                     error!("{}", e);
@@ -88,57 +89,6 @@ impl CleanAction {
                         error!("{}", e);
                     }
                 }
-            }
-        }
-        true
-    }
-
-    fn remove_dir(path: &Path) -> bool {
-        if log_enabled!(Level::Debug) {
-            debug!("Remove directory: {}", path.to_str().unwrap());
-        }
-        if let Err(e) = fs::remove_dir_all(path) {
-            error!("Remove {} failed: {}", path.to_str().unwrap(), e.to_string());
-            return false;
-        }
-        true
-    }
-
-    fn remove_file(path: &Path) -> bool {
-        if log_enabled!(Level::Debug) {
-            debug!("Remove file: {}", path.to_str().unwrap());
-        }
-        if let Err(e) = fs::remove_file(path) {
-            error!("Remove {} failed: {}", path.to_str().unwrap(), e.to_string());
-            return false;
-        }
-        true
-    }
-
-    fn remove_items(path: &Path) -> bool {
-        if log_enabled!(Level::Info) {
-            info!("Remove items: {}", path.to_str().unwrap());
-        }
-        match fs::read_dir(path) {
-            Ok(dir) => {
-                for entry in dir {
-                    match entry {
-                        Ok(entry) => {
-                            let file_type = entry.file_type().unwrap();
-                            if file_type.is_dir() {
-                                Self::remove_dir(entry.path().as_path());
-                            } else {
-                                Self::remove_file(entry.path().as_path());
-                            }
-                        }
-                        Err(e) => {
-                            error!("{}", e.to_string());
-                        }
-                    }
-                }
-            }
-            Err(e) => {
-                error!("{}", e.to_string());
             }
         }
         true
