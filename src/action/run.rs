@@ -6,7 +6,7 @@ use crate::tomcat::CommandLineBuilder;
 use crate::tomcat::ServerXml;
 use crate::tomcat::Tomcat;
 use crate::util::file_utils;
-use log::{debug, error, info, log_enabled, warn, Level};
+use log::{error, info, log_enabled, Level};
 use std::io;
 use std::io::{BufRead, Write};
 use std::process::{exit, Stdio};

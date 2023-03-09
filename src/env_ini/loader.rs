@@ -251,8 +251,6 @@ impl IniLoader {
 
         trace!("Save last section: {}", &current_section.name);
         self.ini.put(current_section);
-
-        println!("{:?}", &self.ini);
         Ok(&self.ini)
     }
 }
