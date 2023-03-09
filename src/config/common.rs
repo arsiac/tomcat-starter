@@ -1,7 +1,7 @@
 use crate::env_ini::Ini;
 use crate::util::os_utils;
 use log::LevelFilter::Info;
-use log::{error, log_enabled, warn, Level, LevelFilter};
+use log::{error, log_enabled, warn, Level, LevelFilter, trace};
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
@@ -210,6 +210,7 @@ impl From<&Ini> for TmsRuntime {
                 tr.jpda_port = get_port(section.get("jpda_port"), tr.jpda_port);
 
                 if let Some(val) = section.get("java_opts") {
+                    trace!("[Init TmsRuntime] java_opts: {}", val);
                     tr.java_opts = Some(val.clone());
                 }
 

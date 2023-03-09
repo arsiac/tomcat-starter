@@ -118,7 +118,7 @@ impl IniLoader {
                 return Err(line.err().unwrap().to_string());
             }
             let line = line.unwrap();
-            let is_start_blank = line.starts_with(" ");
+            let is_start_blank = line.starts_with(" ") || line.starts_with("\t");
             let line = line.trim();
             if line.is_empty() && state != IniAnalyzeState::Pair {
                 continue;
@@ -164,6 +164,9 @@ impl IniLoader {
                         match key_cache {
                             None => {
                                 trace!("No key cache.");
+                                if line.is_empty() {
+                                    break;
+                                }
                                 match line.find("=") {
                                     None => {
                                         trace!("key: '{}', value: None", line);
@@ -209,6 +212,7 @@ impl IniLoader {
 
                                 // 如果下一行的开头不是空格，或者行为空，代表值已经结束
                                 if !is_start_blank || line.is_empty() {
+                                    println!("VE: {}", &line);
                                     key_cache = None;
                                     state = IniAnalyzeState::Ready;
                                 } else {
@@ -248,6 +252,7 @@ impl IniLoader {
         trace!("Save last section: {}", &current_section.name);
         self.ini.put(current_section);
 
+        println!("{:?}", &self.ini);
         Ok(&self.ini)
     }
 }
