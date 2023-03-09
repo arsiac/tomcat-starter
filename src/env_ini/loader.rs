@@ -21,6 +21,7 @@ pub struct IniLoader {
     ini: Ini,
 }
 
+#[derive(PartialEq)]
 enum IniAnalyzeState {
     Ready,
     Section,
@@ -117,8 +118,9 @@ impl IniLoader {
                 return Err(line.err().unwrap().to_string());
             }
             let line = line.unwrap();
+            let is_start_blank = line.starts_with(" ");
             let line = line.trim();
-            if line.is_empty() {
+            if line.is_empty() && state != IniAnalyzeState::Pair {
                 continue;
             }
 
@@ -205,8 +207,8 @@ impl IniLoader {
                                     break;
                                 }
 
-                                // 正常的配置行
-                                if line.find("=").is_some() {
+                                // 如果下一行的开头不是空格，或者行为空，代表值已经结束
+                                if !is_start_blank || line.is_empty() {
                                     key_cache = None;
                                     state = IniAnalyzeState::Ready;
                                 } else {
