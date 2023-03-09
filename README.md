@@ -1,100 +1,92 @@
-# tomcat-starter
+# TMS
 
-Run or debug web project by Tomcat.
+使用 `Tomcat` 运行 web 项目
 
-## Usage
+## 使用
+
+### 运行项目
 
 ``` shell
-tms -p xxx_project -w war1 -w war2 -w war3 -n
+# 选择部分项目
+tms run --project <project> --item <item-1> --item <item-2> --item <item-n>
+
+# 运行所有子项
+tms run --project <project> --all-item
 ```
 
-- `--project`, `-p`: project name
+### 在新窗口打开 `Windows`
 
-- `--web-document`, `-w`: web document name
-
-- `--debug-mode`, `-d`: open Tomcat debug mode.(jpda)
-
-- `--new-windows`, `-n`: open in new window
-
-- `--http-port`, `--server-port`, `--jpda-port`
-
-  ```
-  # command line > 'project' node > 'global' node
-  --http-port > [project ""]http_port > [global]http_port
-  --server-port > [project ""]server_port > [global]server_port
-  --jpda-port > [project ""]jpda_port > [global]jpda_port
-  ```
-
-  
-
-- `--config-template`: configuration file template
-
-- `--clean`: clean cache directory
-
- - `--version`: show Tomcat Starter version
-
-## Configuration
-
-### Localtion
-
-``` ini
-Linux: ${HOME}/.tms/config.ini
-Windows: $env:USERPROFILE\.tms\config.ini
+``` shell
+tms run --project <project> --item <item-1> --item <item-2> --separate
 ```
 
-### Template
+### 打开 `JPDA` 调试
+
+``` shell
+tms run --project <project> --item <item-1> --item <item-2> --debug
+```
+
+### 清理缓存或日志
+
+``` shell
+# 清理项目缓存
+tms clean --target cache --project <project>
+# 清理项目日志
+tms clean --target log --project <project>
+# 清理全部
+tms clean --target all --project <project>  
+```
+
+### 清理所有项目
+
+``` shell
+tms clean --target all --all--project
+```
+
+## 配置文件
+
+配置文件与程序在同一目录中
+
+### 配置样例
 
 ``` ini
-; ${HOME}/.tms/config.ini
-[global]
-; debug, info, warn, error and close
-log_level = warn
-java_home = $env:JAVA_HOME
-java_opts = $env:JAVA_OPTS -XX:+HeapDumpOnOutOfMemoryError -XX:-OmitStackTraceInFastThrow
-tomcat = $env:CATALINA_HOME
+[common]
+log_level = info
+; 默认缓存在程序所在目录
+; cache_dir =
+
+[runtime]
+java_home = ${JAVA_HOME}
+java_opts = -XX:+HeapDumpOnOutOfMemoryError \
+            -XX:-OmitStackTraceInFastThrow
+; 是否记录 Tomcat 日志文件
+enable_logfile = false
+catalina_home = ${CATALINA_HOME}
 http_port = 8080
 server_port = 8005
 jpda_port = 5005
-cache_dir = $env:USERPROFILE\.tms
 
-[project "web"]
-java_home = xxx
-java_opts = xxx
-tomcat = xxx
-http_port = xxx
-server_port = xxx
-jpda_port = xxx
+[project]
+; 相对路径或者绝对路径
+include = project/demo.ini
 
-[web "web"]
-war1 = war1|/path/to/xxx.war
-xxx = xxx_context|/path/to/xxx.war
-```
+; demo 项目
+[project "demo"]
+alias = d
+; java_home = 
+enable_logfile = true
+catalina_home = ${CATALINA_HOME}
+http_port = 8080
+server_port = 8005
+jpda_port = 5005
+java_opts = -Dproject.example=demo
+jpda_port = 9888
 
-### Detail
+item.app1.alias = a1
+item.app1.context_path = /app-one
+item.app1.source_path = /path/to/app1
 
-#### `[global]`
-
-- `log_level`: log output level.
-
-- `cache_dir`: web documents cache directory.
-
-#### `[global]`, `[project "name"]`
-
-- `java_home`: JDK path
-
-- `java_opts`: JVM parameters
-
-- `tomcat`: Tomcat path(CATALINA_HOME)
-
-- `http_port`: Tomcat HTTP port
-
-- `server_port`: Tomcat Server port
-
-- `jpda_port`: Tomcat debug port
-
-#### `[web "name"]`
-
-```ini
-[doc_name]=[context-path]|[web document path]
-war1 = war1-web|/path/to/web/document
+item.app2.alias = a2
+item.app2.context_path = /app2
+item.app2.source_path = /path/to/app2
 ```

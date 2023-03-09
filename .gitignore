@@ -1,7 +1,4 @@
-/.vscode/
-/.vs/
-/build/
-/out/
+/target/
+/.idea/
+*.log
 *.exe
-*.out
-CMakeSettings.json
