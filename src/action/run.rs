@@ -8,7 +8,7 @@ use crate::tomcat::Tomcat;
 use crate::util::file_utils;
 use log::{debug, error, info, log_enabled, warn, Level};
 use std::io;
-use std::io::BufRead;
+use std::io::{BufRead, Write};
 use std::process::{exit, Stdio};
 
 pub struct RunAction {
@@ -231,17 +231,8 @@ impl Actions for RunAction {
                                 break;
                             }
 
-                            if out_line.contains("DEBUG") {
-                                debug!("{}", &out_line[..out_line.len() - 1]);
-                            } else if out_line.contains("INFO") {
-                                info!("{}", &out_line[..out_line.len() - 1]);
-                            } else if out_line.contains("WARN") {
-                                warn!("{}", &out_line[..out_line.len() - 1]);
-                            } else if out_line.contains("ERROR") {
-                                error!("{}", &out_line[..out_line.len() - 1]);
-                            } else {
-                                print!("{}", &out_line);
-                            }
+                            io::stdout().write_all(out_line.as_bytes())
+                                .expect("Write Tomcat log failed.");
                         }
                     }
                 }
