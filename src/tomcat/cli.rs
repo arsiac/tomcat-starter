@@ -2,9 +2,9 @@ use log::log_enabled;
 
 use crate::tomcat::RuntimeVersion;
 use crate::util::os_utils;
+use log::{trace, Level};
 use std::path::Path;
 use std::process::Command;
-use log::{Level, trace};
 
 pub struct CommandLineBuilder {
     version: RuntimeVersion,
@@ -108,7 +108,7 @@ impl CommandLineBuilder {
         let mut command = if self.separate {
             if os_utils::is_windows() {
                 let mut cmd = Command::new("cmd.exe");
-                cmd.arg("START").arg("/I").arg(title.to_string());
+                cmd.arg("/c").arg("START").arg("/I").arg(title.to_string());
                 cmd
             } else {
                 Command::new("nohup")
@@ -116,7 +116,7 @@ impl CommandLineBuilder {
         } else {
             Command::new(self.commands[0].as_str())
         };
-        if self.version.jvm.major > 8 {
+        if self.version.jvm.major == 1 && self.version.jvm.minor > 8 {
             let options = "--add-opens=java.base/java.lang=ALL-UNNAMED
             --add-opens=java.base/java.io=ALL-UNNAMED
             --add-opens=java.base/java.util=ALL-UNNAMED

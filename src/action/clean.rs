@@ -1,10 +1,10 @@
-use std::fs;
-use std::path::Path;
-use log::{error, info, Level, log_enabled, trace};
 use crate::action::Actions;
 use crate::argument::{CleanTypeEnum, TmsArgActionClean};
-use crate::config::{TmsConfiguration};
+use crate::config::TmsConfiguration;
 use crate::util::file_utils;
+use log::{error, info, log_enabled, trace, Level};
+use std::fs;
+use std::path::Path;
 
 pub struct CleanAction {
     argument: Box<TmsArgActionClean>,
@@ -23,7 +23,10 @@ impl CleanAction {
         let tc = &self.configuration.common;
         if !tc.cache_dir.exists() {
             if log_enabled!(Level::Warn) {
-                error!("Cache directory not exists: {}", tc.cache_dir.to_str().unwrap());
+                error!(
+                    "Cache directory not exists: {}",
+                    tc.cache_dir.to_str().unwrap()
+                );
             }
             return false;
         }
@@ -71,25 +74,23 @@ impl CleanAction {
                 let path = cache_path.join("logs");
                 file_utils::remove_items(path.as_path());
             }
-            CleanTypeEnum::All => {
-                match fs::read_dir(cache_path) {
-                    Ok(dir) => {
-                        for entry in dir {
-                            match entry {
-                                Ok(entry) => {
-                                    file_utils::remove_dir(entry.path().as_path());
-                                }
-                                Err(e) => {
-                                    error!("{}", e);
-                                }
+            CleanTypeEnum::All => match fs::read_dir(cache_path) {
+                Ok(dir) => {
+                    for entry in dir {
+                        match entry {
+                            Ok(entry) => {
+                                file_utils::remove_dir(entry.path().as_path());
+                            }
+                            Err(e) => {
+                                error!("{}", e);
                             }
                         }
                     }
-                    Err(e) => {
-                        error!("{}", e);
-                    }
                 }
-            }
+                Err(e) => {
+                    error!("{}", e);
+                }
+            },
         }
         true
     }
@@ -106,18 +107,16 @@ impl Actions for CleanAction {
                 error!("Missing --project(-p) <PROJECT> or --all.");
                 false
             }
-            Some(ref name) => {
-                match self.configuration.get_project(name.as_str()) {
-                    None => {
-                        error!("Project not exists: {}", name);
-                        false
-                    }
-                    Some(p) => {
-                        trace!("Clean project: {}", &p.name);
-                        self.clean_project(&p.name, &self.argument.target)
-                    }
+            Some(ref name) => match self.configuration.get_project(name.as_str()) {
+                None => {
+                    error!("Project not exists: {}", name);
+                    false
                 }
-            }
+                Some(p) => {
+                    trace!("Clean project: {}", &p.name);
+                    self.clean_project(&p.name, &self.argument.target)
+                }
+            },
         }
     }
 }

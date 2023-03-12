@@ -5,7 +5,7 @@ use std::fmt::{Display, Formatter};
 pub enum CleanTypeEnum {
     Cache,
     Log,
-    All
+    All,
 }
 
 #[derive(Args, Debug, Clone)]
@@ -74,7 +74,7 @@ impl Display for CleanTypeEnum {
         match self {
             CleanTypeEnum::Cache => write!(f, "cache"),
             CleanTypeEnum::Log => write!(f, "log"),
-            CleanTypeEnum::All => write!(f, "all")
+            CleanTypeEnum::All => write!(f, "all"),
         }
     }
 }

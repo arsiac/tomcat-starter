@@ -1,7 +1,7 @@
 use crate::config::project;
 use crate::config::Project;
 use crate::config::{TmsCommon, TmsRuntime};
-use crate::env_ini::{IniLoader, IniPathLoad};
+use crate::env_ini::IniLoader;
 use crate::util::tms_utils;
 use log::{log_enabled, trace, Level};
 use std::collections::HashMap;
@@ -73,12 +73,13 @@ impl TmsConfiguration {
                 config_file.to_str().unwrap()
             );
         }
-        match IniLoader::new(true).load(config_file) {
+
+        match IniLoader::new(true).load_path(config_file) {
             Err(msg) => Err(msg),
             Ok(ini) => {
-                let tc = TmsCommon::from(ini);
-                let tr = TmsRuntime::from(ini);
-                let projects = project::ini_load_all(&tc, ini);
+                let tc = TmsCommon::from(&ini);
+                let tr = TmsRuntime::from(&ini);
+                let projects = project::ini_load_all(&tc, &ini);
                 Ok(Box::new(TmsConfiguration {
                     common: tc,
                     runtime: tr,

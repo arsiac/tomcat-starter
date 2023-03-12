@@ -1,6 +1,6 @@
 use crate::config::TmsCommon;
+use crate::env_ini::IniLoader;
 use crate::env_ini::{Ini, IniSection};
-use crate::env_ini::{IniLoader, IniPathLoad, IniStrLoad};
 use crate::util::os_utils;
 use log::{debug, error, log_enabled, trace, warn, Level};
 use std::collections::{HashMap, HashSet};
@@ -358,7 +358,7 @@ pub fn ini_load_all(config: &TmsCommon, ini: &Ini) -> HashMap<String, Project> {
                         if log_enabled!(Level::Trace) {
                             trace!("Path is absolute: {}", path.to_str().unwrap());
                         }
-                        IniPathLoad::load(&mut loader, path.as_path())
+                        loader.load_path(path.as_path())
                     } else {
                         if log_enabled!(Level::Trace) {
                             trace!("Path is relative: {}", path.to_str().unwrap());
@@ -373,11 +373,11 @@ pub fn ini_load_all(config: &TmsCommon, ini: &Ini) -> HashMap<String, Project> {
                         if log_enabled!(Level::Trace) {
                             trace!("File path: {}", path.to_str().unwrap());
                         }
-                        IniStrLoad::load(&mut loader, path.to_str().unwrap())
+                        loader.load_path(path.as_path())
                     };
                     match include_ini {
                         Ok(include_ini) => {
-                            for (name, project) in ini_load(include_ini) {
+                            for (name, project) in ini_load(&include_ini) {
                                 if projects.insert(name.clone(), project).is_some() {
                                     error!("Duplicate project: {}", &name);
                                     exit(1);

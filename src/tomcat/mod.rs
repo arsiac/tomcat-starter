@@ -166,12 +166,15 @@ impl Tomcat {
                                 trace!("{}", &out_line[0..out_line.len() - 1]);
                             }
                             let version = &out_line[JVM_VER_PREFIX.len()..out_line.len()];
-                            let version = version.trim();
-                            if version.starts_with("1.8.0") {
-                                runtime_version.jvm.major = 8;
-                            } else {
-                                runtime_version.jvm = Version::from_str(version)?;
-                            }
+                            let version = match version.find("_") {
+                                None => {
+                                    version.trim()
+                                }
+                                Some(index) => {
+                                    (&version[..index]).trim()
+                                }
+                            };
+                            runtime_version.jvm = Version::from_str(version)?;
                         }
                     }
                 }

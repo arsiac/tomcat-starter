@@ -1,4 +1,4 @@
-use log::{error, log_enabled, Level, debug};
+use log::{debug, error, log_enabled, Level};
 use std::fs;
 use std::path::Path;
 
@@ -26,7 +26,11 @@ pub fn remove_dir(path: &Path) -> bool {
         debug!("Remove directory: {}", path.to_str().unwrap());
     }
     if let Err(e) = fs::remove_dir_all(path) {
-        error!("Remove {} failed: {}", path.to_str().unwrap(), e.to_string());
+        error!(
+            "Remove {} failed: {}",
+            path.to_str().unwrap(),
+            e.to_string()
+        );
         return false;
     }
     true
@@ -40,7 +44,11 @@ pub fn remove_file(path: &Path) -> bool {
         debug!("Remove file: {}", path.to_str().unwrap());
     }
     if let Err(e) = fs::remove_file(path) {
-        error!("Remove {} failed: {}", path.to_str().unwrap(), e.to_string());
+        error!(
+            "Remove {} failed: {}",
+            path.to_str().unwrap(),
+            e.to_string()
+        );
         return false;
     }
     true

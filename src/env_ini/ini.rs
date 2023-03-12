@@ -92,11 +92,6 @@ impl Ini {
         }
     }
 
-    /// Ini 实例是否为空
-    pub fn is_empty(&self) -> bool {
-        self.section_map.is_empty()
-    }
-
     /// 是否存在对应 section
     pub fn contains(&self, section_name: &str) -> bool {
         self.section_map.contains_key(section_name)

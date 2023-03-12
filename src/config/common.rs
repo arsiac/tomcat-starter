@@ -1,7 +1,7 @@
 use crate::env_ini::Ini;
 use crate::util::os_utils;
 use log::LevelFilter::Info;
-use log::{error, log_enabled, warn, Level, LevelFilter, trace};
+use log::{error, log_enabled, trace, warn, Level, LevelFilter};
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;

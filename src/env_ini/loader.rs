@@ -5,28 +5,21 @@ use std::fmt::{Display, Formatter};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
-
-pub trait IniStrLoad<T, E> {
-    fn load(&mut self, s: &str) -> Result<&T, E>;
-}
-
-pub trait IniPathLoad<T, E> {
-    fn load(&mut self, p: &Path) -> Result<&T, E>;
-}
+use crate::env_ini::lines;
 
 const ENV_REGEX: &str = r"\$\{([a-zA-Z][a-zA-Z0-9_\.]+)\}";
-
-pub struct IniLoader {
-    resolve_env: bool,
-    ini: Ini,
-}
 
 #[derive(PartialEq)]
 enum IniAnalyzeState {
     Ready,
     Section,
-    Pair,
+    Key,
+    Value(String),
     Comment,
+}
+
+pub struct IniLoader {
+    resolve_env: bool,
 }
 
 impl Display for IniAnalyzeState {
@@ -34,7 +27,8 @@ impl Display for IniAnalyzeState {
         match self {
             IniAnalyzeState::Ready => write!(f, "Ready"),
             IniAnalyzeState::Section => write!(f, "Section"),
-            IniAnalyzeState::Pair => write!(f, "Pair"),
+            IniAnalyzeState::Key => write!(f, "Key"),
+            IniAnalyzeState::Value(s) => write!(f, "Value({})", s),
             IniAnalyzeState::Comment => write!(f, "Comment"),
         }
     }
@@ -45,33 +39,18 @@ impl IniLoader {
     /// `resolve_env`: 是否解析 value 中的环境变量
     pub fn new(resolve_env: bool) -> Self {
         IniLoader {
-            resolve_env,
-            ini: Ini::new(),
+            resolve_env
         }
     }
 
-    /// 清空配置
-    pub fn clear(&mut self) {
-        if !self.ini.is_empty() {
-            self.ini = Ini::new();
+    pub fn load_path(&mut self, p: &Path) -> Result<Ini, String> {
+        if !p.exists() {
+            return Err(format!("File not exists: {}", p.to_str().unwrap()));
         }
-    }
-
-    /// 返回 ini 配置
-    // pub fn get_ini(&self) -> &Ini {
-    //     return &self.ini;
-    // }
-
-    fn is_comment(line: &str) -> bool {
-        line.starts_with(";") || line.starts_with("#")
-    }
-
-    fn is_section(line: &str) -> bool {
-        line.starts_with("[") && line.ends_with("]")
-    }
-
-    fn is_value_not_end(line: &str) -> bool {
-        line.ends_with("\\")
+        match File::open(p) {
+            Err(e) => Err(e.to_string()),
+            Ok(file) => self.load_file(&file),
+        }
     }
 
     fn resolve_value(&self, value: &str) -> Option<String> {
@@ -108,140 +87,127 @@ impl IniLoader {
     }
 
     /// 从文件加载 ini 配置
-    fn load_ini_file(&mut self, file: &File) -> Result<&Ini, String> {
-        self.clear();
-        let mut current_section = IniSection::default();
+    fn load_file(&mut self, file: &File) -> Result<Ini, String> {
+        let mut ini = Ini::new();
+        let reader = BufReader::new(file);
+
         let mut state = IniAnalyzeState::Ready;
-        let mut key_cache: Option<String> = None;
-        for line in BufReader::new(file).lines() {
-            if line.is_err() {
-                return Err(line.err().unwrap().to_string());
+        let mut section = IniSection::default();
+        for line in reader.lines() {
+            if let Err(e) = line {
+                return Err(e.to_string());
             }
             let line = line.unwrap();
-            let is_start_blank = line.starts_with(" ") || line.starts_with("\t");
-            let line = line.trim();
-            if line.is_empty() && state != IniAnalyzeState::Pair {
-                continue;
-            }
+            let trim_line = line.trim();
 
-            trace!("analyse line: {}", line);
+            trace!("Analyse line: {}", line);
             let mut safe_loop = 0;
             loop {
                 safe_loop = safe_loop + 1;
                 if safe_loop > 3 {
                     panic!("Loop too mach.");
                 }
-                trace!("state: {}", state);
+                trace!("State: {}", &state);
                 match state {
                     IniAnalyzeState::Ready => {
-                        if Self::is_comment(&line) {
+                        if lines::is_blank(trim_line) {
+                            break;
+                        }
+                        if lines::is_comment(trim_line) {
                             state = IniAnalyzeState::Comment;
-                        } else if Self::is_section(line) {
+                        } else if lines::is_section(trim_line) {
                             state = IniAnalyzeState::Section;
                         } else {
-                            state = IniAnalyzeState::Pair;
+                            state = IniAnalyzeState::Key;
                         }
                     }
                     IniAnalyzeState::Comment => {
-                        // Skip comments
-                        trace!("Skip comment.");
+                        trace!("Skip comment: {}", line);
                         state = IniAnalyzeState::Ready;
                         break;
                     }
                     IniAnalyzeState::Section => {
                         // Save old section
-                        trace!("Save old section: {}", &current_section.name);
-                        self.ini.put(current_section);
+                        trace!("Save old section: {}", &section.name);
 
+                        ini.put(section);
                         // Get new section
-                        let section_name = (&line[1..line.len() - 1]).trim();
+                        let section_name = (&trim_line[1..trim_line.len() - 1]).trim();
                         trace!("Get new section: {}", section_name);
-                        current_section = self.ini.get_or_create(section_name).clone();
+                        section = ini.get_or_create(section_name).clone();
                         state = IniAnalyzeState::Ready;
                         break;
                     }
-                    IniAnalyzeState::Pair => {
-                        match key_cache {
+                    IniAnalyzeState::Key => {
+                        if lines::is_blank(trim_line) {
+                            break;
+                        }
+                        match line.find("=") {
                             None => {
-                                trace!("No key cache.");
-                                if line.is_empty() {
-                                    break;
-                                }
-                                match line.find("=") {
-                                    None => {
-                                        trace!("key: '{}', value: None", line);
-                                        current_section.set(line, None);
-                                        state = IniAnalyzeState::Ready;
-                                        break;
-                                    }
-                                    Some(index) => {
-                                        let key = (&line[0..index]).trim();
-                                        let value = (&line[index + 1..line.len()]).trim();
-
-                                        // 替换环境变量
-                                        match self.resolve_value(value) {
-                                            None => {
-                                                trace!("key: {}, value: {}", key, value);
-                                                current_section.set(key, Some(value));
-                                            }
-                                            Some(val) => {
-                                                let val = val.as_str();
-                                                trace!("key: {}, value: {}", key, val);
-                                                current_section.set(key, Some(val));
-                                            }
-                                        }
-
-                                        // 解析状态更新
-                                        if Self::is_value_not_end(value) {
-                                            trace!("value ends with ' \\'. value is not end.");
-                                            key_cache = Some(String::from(key));
-                                        } else {
-                                            state = IniAnalyzeState::Ready;
-                                        }
-                                        break;
-                                    }
-                                }
+                                trace!("key: '{}', value: None", &line);
+                                section.set(&line, None);
+                                state = IniAnalyzeState::Ready;
+                                break;
                             }
+                            Some(index) => {
+                                let key = (&trim_line[..index]).trim();
+                                let value = (&trim_line[index + 1..]).trim();
 
-                            // 值还未结束
-                            Some(ref key) => {
-                                trace!("key cache: {}", key);
-                                if Self::is_comment(line) {
-                                    break;
+                                // 替换环境变量
+                                match self.resolve_value(value) {
+                                    None => {
+                                        trace!("key: {}, value: {}", key, value);
+                                        section.set(key, Some(value));
+                                    }
+                                    Some(val) => {
+                                        let val = val.as_str();
+                                        trace!("key: {}, value: {}", key, val);
+                                        section.set(key, Some(val));
+                                    }
                                 }
 
-                                // 如果下一行的开头不是空格，或者行为空，代表值已经结束
-                                if !is_start_blank || line.is_empty() {
-                                    println!("VE: {}", &line);
-                                    key_cache = None;
+                                // 解析状态更新
+                                if lines::is_value_end(trim_line) {
                                     state = IniAnalyzeState::Ready;
                                 } else {
-                                    let value = current_section.get(key).unwrap();
-                                    let value = &value.as_str()[0..value.len() - 1];
-                                    let value = format!("{}{}", value, line);
-                                    current_section.set(key, Some(value.as_str()));
+                                    trace!("value is not end: {}", line);
+                                    state = IniAnalyzeState::Value(key.to_string());
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    IniAnalyzeState::Value(ref key) => {
+                        if lines::is_comment(trim_line) {
+                            break;
+                        }
 
-                                    // 替换环境变量
-                                    match self.resolve_value(value.as_str()) {
-                                        None => {
-                                            trace!("key: {}, value: {}", key, value);
-                                            current_section.set(key, Some(value.as_str()));
-                                        }
-                                        Some(val) => {
-                                            let val = val.as_str();
-                                            trace!("key: {}, value: {}", key, val);
-                                            current_section.set(key, Some(val));
-                                        }
-                                    }
+                        // 如果下一行的开头不是空白，或者行为空，代表值已经结束
+                        if !lines::start_with_blank(&line) || lines::is_blank(trim_line) {
+                            state = IniAnalyzeState::Ready;
+                        } else {
+                            let value = section.get(key).unwrap();
+                            let value = &value[..value.len() - 1];
+                            let value = format!("{}{}", value, trim_line);
 
-                                    // 值结束则清除 key 缓存并更新解析状态
-                                    if !Self::is_value_not_end(value.as_str()) {
-                                        key_cache = None;
-                                        state = IniAnalyzeState::Ready;
-                                    }
-                                    break;
+                            // 替换环境变量
+                            match self.resolve_value(value.as_str()) {
+                                None => {
+                                    trace!("key: {}, value: {}", key, value);
+                                    section.set(key, Some(value.as_str()));
+                                }
+                                Some(val) => {
+                                    let val = val.as_str();
+                                    trace!("key: {}, value: {}", key, val);
+                                    section.set(key, Some(val));
                                 }
                             }
+
+                            // 值结束则清除 key 缓存并更新解析状态
+                            if lines::is_value_end(trim_line) {
+                                state = IniAnalyzeState::Ready;
+                            }
+                            break;
                         }
                     }
                 }
@@ -249,74 +215,10 @@ impl IniLoader {
         }
         // Save last section
 
-        trace!("Save last section: {}", &current_section.name);
-        self.ini.put(current_section);
-        Ok(&self.ini)
-    }
-}
+        trace!("Save last section: {}", &section.name);
+        ini.put(section);
 
-impl IniStrLoad<Ini, String> for IniLoader {
-    fn load(&mut self, s: &str) -> Result<&Ini, String> {
-        match File::open(Path::new(s)) {
-            Err(e) => Err(e.to_string()),
-            Ok(file) => self.load_ini_file(&file),
-        }
-    }
-}
-
-impl IniPathLoad<Ini, String> for IniLoader {
-    fn load(&mut self, p: &Path) -> Result<&Ini, String> {
-        if !p.exists() {
-            return Err(format!("File not exists: {}", p.to_str().unwrap()));
-        }
-        match File::open(p) {
-            Err(e) => Err(e.to_string()),
-            Ok(file) => self.load_ini_file(&file),
-        }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::env_ini::loader::{IniLoader, IniPathLoad};
-    use log::LevelFilter;
-    use std::env;
-
-    fn init() {
-        let _ = env_logger::builder()
-            .is_test(true)
-            .format_timestamp(None)
-            .filter_level(LevelFilter::Trace)
-            .try_init();
-    }
-
-    #[test]
-    fn test_ini_load() {
-        init();
-        let file_path = env::current_dir()
-            .unwrap()
-            .join("config")
-            .join("config.ini");
-        println!("file: {}", file_path.to_str().unwrap());
-        match IniLoader::new(true).load(file_path.as_path()) {
-            Ok(ini) => {
-                let section = ini.get("runtime");
-                assert!(section.is_some());
-                let section = section.unwrap();
-                let java_home = section.get("java_home");
-                let env_java_home = env::var("JAVA_HOME");
-                match env_java_home {
-                    Err(_) => {
-                        assert_eq!(java_home, None);
-                    }
-                    Ok(val) => {
-                        assert_eq!(java_home, Some(&val))
-                    }
-                }
-            }
-            Err(msg) => {
-                panic!("{}", msg)
-            }
-        }
+        trace!("ini: {:?}", &ini);
+        Ok(ini)
     }
 }
