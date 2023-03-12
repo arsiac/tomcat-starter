@@ -7,8 +7,6 @@ use crate::tomcat::ServerXml;
 use crate::tomcat::Tomcat;
 use crate::util::file_utils;
 use log::{error, info, log_enabled, Level};
-use std::io;
-use std::io::{BufRead, Write};
 use std::process::{exit, Stdio};
 
 pub struct RunAction {
@@ -156,9 +154,11 @@ impl Actions for RunAction {
 
         // 输出环境信息
         self.output_runtime(&project, &items);
-        let tomcat = Tomcat::new(runtime.get_java_home(),
-                                 runtime.get_catalina_home(),
-                                 runtime.get_catalina_base());
+        let tomcat = Tomcat::new(
+            runtime.get_java_home(),
+            runtime.get_catalina_home(),
+            runtime.get_catalina_base(),
+        );
         tomcat.init_catalina_base();
 
         // 获取环境版本
@@ -181,7 +181,7 @@ impl Actions for RunAction {
         };
         server_xml.http_port(runtime.http_port.unwrap());
         server_xml.server_port(runtime.server_port.unwrap());
-        for item in items.items {
+        for item in &items.items {
             server_xml.add_context(item.context_path.as_str(), item.source_path.as_str())
         }
         tomcat.create_base_server_xml(&server_xml);
@@ -193,11 +193,16 @@ impl Actions for RunAction {
 
         let mut builder = CommandLineBuilder::new(&runtime_version, self.argument.separate);
 
-        builder.with_java_home(runtime.get_java_home())
-            .with_catalina(runtime.get_catalina_home(), runtime.get_catalina_home());
+        builder
+            .with_java_home(runtime.get_java_home())
+            .with_catalina(runtime.get_catalina_home(), runtime.get_catalina_base());
         if runtime.enable_logfile.unwrap() {
-            let logfile = runtime.catalina_base.as_ref().unwrap()
-                .join("conf").join("logging.properties");
+            let logfile = runtime
+                .catalina_base
+                .as_ref()
+                .unwrap()
+                .join("conf")
+                .join("logging.properties");
             builder.with_log(Some(logfile.as_path()));
         } else {
             builder.with_log(None);
@@ -216,31 +221,13 @@ impl Actions for RunAction {
             title = format!("{}: {}", &project.name, items.names.join(","));
         }
 
-        match builder.build(title.as_str()).stdout(Stdio::piped()).spawn() {
-            Ok(mut child) => {
-                if self.argument.separate {
-                    info!("Tomcat starting ...");
-                    return true;
-                } else {
-                    let stdout = child.stdout.take().unwrap();
-                    let mut reader = io::BufReader::new(stdout);
-                    loop {
-                        let mut out_line = String::new();
-                        if let Ok(_) = reader.read_line(&mut out_line) {
-                            if let Ok(Some(_)) = child.try_wait() {
-                                break;
-                            }
+        let mut cli = builder.build(title.as_str());
+        // rust 标准输出不支持非UTF8的输出，暂时不拦截日志实现过滤功能了
+        cli.stdout(Stdio::inherit()).stderr(Stdio::inherit());
 
-                            io::stdout().write_all(out_line.as_bytes())
-                                .expect("Write Tomcat log failed.");
-                        }
-                    }
-                }
-            }
-            Err(e) => {
-                error!("Start tomcat failed: {}", e.to_string());
-                return false;
-            }
+        if let Err(e) = cli.output() {
+            error!("Start tomcat failed: {}", e.to_string());
+            return false;
         }
         true
     }

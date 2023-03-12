@@ -1,7 +1,10 @@
+use log::log_enabled;
+
 use crate::tomcat::RuntimeVersion;
 use crate::util::os_utils;
 use std::path::Path;
 use std::process::Command;
+use log::{Level, trace};
 
 pub struct CommandLineBuilder {
     version: RuntimeVersion,
@@ -55,6 +58,8 @@ impl CommandLineBuilder {
                     .push(format!("-Djava.util.logging.config.file={}", file))
             }
         }
+        // 会使用系统默认的编码输出日志
+        // 但不会记录到日志文件
         self.commands
             .push("-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager".to_string());
         self
@@ -100,11 +105,17 @@ impl CommandLineBuilder {
         self.commands
             .push("org.apache.catalina.startup.Bootstrap".to_string());
         self.commands.push("start".to_string());
-        let mut command = Command::new("cmd.exe");
-        command.arg("/c");
-        if self.separate {
-            command.arg("START").arg("/I").arg(title.to_string());
-        }
+        let mut command = if self.separate {
+            if os_utils::is_windows() {
+                let mut cmd = Command::new("cmd.exe");
+                cmd.arg("START").arg("/I").arg(title.to_string());
+                cmd
+            } else {
+                Command::new("nohup")
+            }
+        } else {
+            Command::new(self.commands[0].as_str())
+        };
         if self.version.jvm.major > 8 {
             let options = "--add-opens=java.base/java.lang=ALL-UNNAMED
             --add-opens=java.base/java.io=ALL-UNNAMED
@@ -114,7 +125,15 @@ impl CommandLineBuilder {
             command.env("JDK_JAVA_OPTIONS", options);
         }
 
-        command.args(&self.commands);
+        if log_enabled!(Level::Trace) {
+            trace!("Command: {}", self.commands.join(" "));
+        }
+
+        if self.separate {
+            command.args(&self.commands);
+        } else {
+            command.args(&self.commands[1..]);
+        }
         command
     }
 }

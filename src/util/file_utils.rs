@@ -1,4 +1,4 @@
-use log::{error, log_enabled, Level, debug, info};
+use log::{error, log_enabled, Level, debug};
 use std::fs;
 use std::path::Path;
 
@@ -50,8 +50,8 @@ pub fn remove_items(path: &Path) -> bool {
     if !path.exists() {
         return true;
     }
-    if log_enabled!(Level::Info) {
-        info!("Remove items: {}", path.to_str().unwrap());
+    if log_enabled!(Level::Debug) {
+        debug!("Remove items: {}", path.to_str().unwrap());
     }
     match fs::read_dir(path) {
         Ok(dir) => {
