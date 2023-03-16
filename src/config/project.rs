@@ -165,6 +165,7 @@ fn get_port(port: Option<&String>) -> Option<i32> {
     None
 }
 
+/// 从 ini 配置文件中加载 item
 fn ini_load_item(project: &mut Project, section: &IniSection) {
     const ITEM_PREFIX: &str = "item.";
     let mut item_map: HashMap<String, ProjectItem> = HashMap::new();
@@ -272,6 +273,7 @@ fn ini_load_item(project: &mut Project, section: &IniSection) {
     }
 }
 
+/// 从 ini 配置文件中加载 project
 fn ini_load(ini: &Ini) -> HashMap<String, Project> {
     const PROJECT_PREFIX: &str = "project ";
     let mut projects = HashMap::new();
@@ -330,6 +332,9 @@ fn ini_load(ini: &Ini) -> HashMap<String, Project> {
     projects
 }
 
+/// 从 ini 文件中加载所有的项目
+///
+/// 先从主配置文件加载，然后从 project.include 配置的文件中加载
 pub fn ini_load_all(config: &TmsCommon, ini: &Ini) -> HashMap<String, Project> {
     let mut projects = HashMap::new();
     for (name, project) in ini_load(ini) {
@@ -347,12 +352,8 @@ pub fn ini_load_all(config: &TmsCommon, ini: &Ini) -> HashMap<String, Project> {
             Some(include) => {
                 debug!("Load ini: {}", include);
                 for file in include.split(",") {
-                    let file = if os_utils::is_windows() {
-                        file.replace("/", "\\")
-                    } else {
-                        file.replace("\\", "/")
-                    };
-                    let path = PathBuf::from(file.as_str());
+                    let file = file.trim();
+                    let path = PathBuf::from(file);
                     let mut loader = IniLoader::new(false);
                     let include_ini = if path.is_absolute() {
                         if log_enabled!(Level::Trace) {
@@ -367,9 +368,8 @@ pub fn ini_load_all(config: &TmsCommon, ini: &Ini) -> HashMap<String, Project> {
                         let path = match cache_path.parent() {
                             None => cache_path.as_path(),
                             Some(cp) => cp,
-                        }
-                        .to_path_buf()
-                        .join(file.as_str());
+                        }.join(file);
+
                         if log_enabled!(Level::Trace) {
                             trace!("File path: {}", path.to_str().unwrap());
                         }
