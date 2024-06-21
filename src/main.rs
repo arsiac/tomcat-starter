@@ -1,27 +1,18 @@
 mod action;
-mod argument;
+mod app;
 mod config;
-mod env_ini;
-mod tomcat;
-mod util;
-
-use crate::config::configuration::TmsConfiguration;
-use argument::TmsArgument;
-use clap::Parser;
-use log::error;
-use std::process::exit;
 
 fn main() {
-    let args = Box::new(TmsArgument::parse());
-    let config = match TmsConfiguration::load() {
-        Ok(v) => v,
-        Err(msg) => {
-            error!("Load configuration failed: {}", msg);
-            exit(1);
+    match config::init() {
+        Ok(config) => {
+            if let Err(e) = app::run(&config) {
+                log::error!("{}", e);
+                std::process::exit(2);
+            }
         }
-    };
-
-    if !action::execute(args, config) {
-        exit(1);
+        Err(e) => {
+            log::error!("{}", e);
+            std::process::exit(1);
+        }
     }
 }

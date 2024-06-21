@@ -1,0 +1,66 @@
+# 可以使用 tms example > config.toml 命令生成配置文件
+
+## 以下配置中注释的配置表示非必须配置，注释的配置的取值即为默认值
+## 日志级别
+# trace, debug, info, warn, error, off
+# log_level = "info"
+
+## 导入其他配置文件，导入的配置文件中只有 [[project]] 会生效
+# include= []
+
+## default 标签表示项目默认配置，可以不配置
+# 默认 java 运行环境配置
+# [default.java]
+# 默认取环境变量 JAVA_HOME 的值
+# java_home =
+# 默认为空
+# java_options =
+
+# 默认 tomcat 配置
+#[default.tomcat]
+# 默认取环境变量 CATALINE_HOME 的值
+# tomcat_home =
+# 服务端口
+# server_port = 8005
+# HTTP 端口
+# http_port = 8080
+# JPDA 端口
+# jpda_port = 8000
+
+## 项目配置
+[[project]]
+# 项目名称
+name = "example"
+# 项目别名
+alias = "ex"
+# 项目描述
+# description =
+
+# 项目 Java 运行环境配置，，默认取 [default.java] 的值
+# [project.runtime.java]
+# java_home =
+# java_options =
+
+# 项目 Tomcat 运行环境配置，默认取 [default.tomcat] 的值
+# [project.runtime.tomcat]
+# tomcat_home =
+# server_port =
+# http_port =
+# jpda_port =
+
+# 项目子项配置
+[[project.item]]
+# 项目子项名称
+name = "example-item-1"
+# 项目子项别名
+alias = "ex"
+# 项目子项上下文路径
+context-path = "/"
+# 项目子项 war 或 war解压目录路径
+path = "/path/to/item"
+
+[[project.item]]
+name = "example-item-2"
+alias = "ex2"
+context-path = "/copy"
+path = "/path/to/item"

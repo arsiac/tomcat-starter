@@ -1,0 +1,9 @@
+[[project]]
+name = "demo2.1"
+alias = "d2.1"
+description = "Demo 2.1"
+
+[[project.item]]
+name = "demo2.1.1"
+alias = "d2.1.1"
+path = "demo2.1.1"

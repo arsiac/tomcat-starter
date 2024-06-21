@@ -1,0 +1,38 @@
+log_level = "info"
+include= ["demo1.toml", "include/demo2.toml"]
+
+[default.java]
+java_home = "D:/Scoop/apps/temurin8-jdk/current"
+
+[default.tomcat]
+tomcat_home = "D:/Scoop/apps/tomcat8/current"
+http_port = 8080
+jpda_port = 8000
+server_port = 8005
+
+[[project]]
+name = "jenkins"
+alias = "jks"
+description = "Jenkins is a continuous integration server"
+
+[project.runtime.tomcat]
+http_port = 8081
+jpda_port = 5005
+server_port = 8005
+
+[[project.item]]
+name = "jenkins-war"
+alias = "jks"
+context-path = "/"
+path = "E:/Repository/War/Jenkins/jenkins.war"
+
+[[project]]
+name = "example"
+alias = "ex"
+description = "Example"
+
+[[project.item]]
+name = "example-app"
+alias = "ex"
+context-path = "/"
+path = "E:/Workspace/Sources/java-maven-sample-war/target/Example-0.0.1-SNAPSHOT.war"
