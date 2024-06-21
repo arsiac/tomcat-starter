@@ -1,6 +1,4 @@
-# 可以使用 tms example > config.toml 命令生成配置文件
-
-## 以下配置中注释的配置表示非必须配置，注释的配置的取值即为默认值
+## 在以下配置中，注释的配置表示非必须配置，注释的配置的取值为默认值
 ## 日志级别
 # trace, debug, info, warn, error, off
 # log_level = "info"
