@@ -13,7 +13,7 @@ use crate::config::file::{
 use crate::app::AppError;
 
 pub fn init() -> Result<TmsConfig, AppError> {
-    let file_config = file::load_config_file();
+    let file_config = file::load_config_file()?;
     init_logger(file_config.log_level.as_ref())?;
     let config = TmsConfig {
         default: init_runtime(file_config.default.as_ref(), true)?,

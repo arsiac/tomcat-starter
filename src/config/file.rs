@@ -1,5 +1,7 @@
 use serde::Deserialize;
 
+use crate::app::AppError;
+
 const CONFIG_FILENAME: &str = "config.toml";
 
 #[derive(Debug, Deserialize)]
@@ -51,23 +53,21 @@ pub struct ProjectItemFileConfig {
     pub context_path: Option<String>,
 }
 
-pub fn load_config_file() -> TmsFileConfig {
+pub fn load_config_file() -> Result<TmsFileConfig, AppError> {
     let config_dir = super::get_config_dir();
     let config_file = config_dir.clone().join(CONFIG_FILENAME);
     if !config_file.exists() {
-        panic!("config file not found: {}", config_file.display())
+        return Err(AppError::Config(format!(
+            "config file not found: {}",
+            config_file.display()
+        )));
     }
-    let file_content = std::fs::read_to_string(config_file.as_path());
-    if let Err(e) = file_content {
-        panic!("Failed to read config file: {}", e);
-    }
+    let file_content = std::fs::read_to_string(config_file.as_path())
+        .map_err(|e| AppError::Config(format!("Failed to read config file: {}", e)))?;
 
-    let file_content = file_content.unwrap();
-    let config = toml::from_str::<TmsFileConfig>(file_content.as_str());
-    if let Err(e) = config {
-        panic!("Failed to parse config file: {}", e);
-    }
-    let mut config = config.unwrap();
+    let mut config = toml::from_str::<TmsFileConfig>(file_content.as_str())
+        .map_err(|e| AppError::Config(format!("Failed to parse config file: {}", e)))?;
+
     if config.projects.is_none() {
         config.projects = Some(Vec::new());
     }
@@ -76,20 +76,17 @@ pub fn load_config_file() -> TmsFileConfig {
         for include in includes {
             let include_file = config_dir.clone().join(include);
             if !include_file.exists() {
-                panic!("include file not found: {}", include_file.display())
+                return Err(AppError::Config(format!(
+                    "include file not found: {}",
+                    include_file.display()
+                )));
             }
-            let file_content = std::fs::read_to_string(include_file.as_path());
-            if let Err(e) = file_content {
-                panic!("Failed to read include file: {}", e);
-            }
+            let file_content = std::fs::read_to_string(include_file.as_path())
+                .map_err(|e| AppError::Config(format!("Failed to read include file: {}", e)))?;
 
-            let file_content = file_content.unwrap();
-            let include_config = toml::from_str::<TmsFileConfig>(file_content.as_str());
-            if let Err(e) = include_config {
-                panic!("Failed to parse include file: {}", e);
-            }
+            let include_config = toml::from_str::<TmsFileConfig>(file_content.as_str())
+                .map_err(|e| AppError::Config(format!("Failed to parse include file: {}", e)))?;
 
-            let include_config = include_config.unwrap();
             if let Some(include_projects) = include_config.projects {
                 for project_config in include_projects {
                     projects.push(project_config);
@@ -98,5 +95,5 @@ pub fn load_config_file() -> TmsFileConfig {
         }
     }
 
-    config
+    Ok(config)
 }

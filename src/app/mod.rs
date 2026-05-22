@@ -42,14 +42,27 @@ pub fn run(config: &TmsConfig) -> Result<(), AppError> {
             None => action::list::list_projects(config),
             Some(project) => action::list::list_project_items(config, &project)?,
         },
-        arg::Action::Config => {
-            let sample_file = ExampleConfig::get( "config-sample.toml").unwrap();
-            println!("{}", std::str::from_utf8(sample_file.data.as_ref()).unwrap());
-        }
-        arg::Action::Version => {
-            println!("tms version {}", VERSION);
-        }
+        arg::Action::Config => print_config(),
+        arg::Action::Version => print_version(),
     }
 
     Ok(())
+}
+
+pub fn run_without_config(action: arg::Action) -> Result<(), AppError> {
+    match action {
+        arg::Action::Config => print_config(),
+        arg::Action::Version => print_version(),
+        _ => unreachable!(),
+    }
+    Ok(())
+}
+
+fn print_config() {
+    let sample_file = ExampleConfig::get("config-sample.toml").unwrap();
+    println!("{}", std::str::from_utf8(sample_file.data.as_ref()).unwrap());
+}
+
+fn print_version() {
+    println!("tms version {}", VERSION);
 }

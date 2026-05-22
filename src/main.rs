@@ -1,18 +1,30 @@
+use clap::Parser;
+
 mod action;
 mod app;
 mod config;
 
 fn main() {
-    match config::init() {
-        Ok(config) => {
-            if let Err(e) = app::run(&config) {
+    let args = app::arg::Argument::parse();
+
+    match &args.action {
+        app::arg::Action::Config | app::arg::Action::Version => {
+            if let Err(e) = app::run_without_config(args.action) {
                 log::error!("{}", e);
                 std::process::exit(2);
             }
         }
-        Err(e) => {
-            log::error!("{}", e);
-            std::process::exit(1);
-        }
+        _ => match config::init() {
+            Ok(config) => {
+                if let Err(e) = app::run(&config) {
+                    log::error!("{}", e);
+                    std::process::exit(2);
+                }
+            }
+            Err(e) => {
+                log::error!("{}", e);
+                std::process::exit(1);
+            }
+        },
     }
 }
