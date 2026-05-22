@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::{Args, Parser, Subcommand};
 
 use crate::app;
@@ -5,8 +7,17 @@ use crate::app;
 #[derive(Parser, Debug)]
 #[command(version = app::VERSION, disable_version_flag = true, disable_help_flag = false)]
 pub struct Argument {
+    #[arg(short = 'c', long = "config", help = "指定配置文件路径")]
+    pub config: Option<String>,
+
     #[command(subcommand)]
     pub action: Action,
+}
+
+impl Argument {
+    pub fn config_path(&self) -> Option<PathBuf> {
+        self.config.as_ref().map(PathBuf::from)
+    }
 }
 
 #[derive(Debug, Subcommand)]

@@ -18,13 +18,6 @@ pub fn get_exe_directory() -> PathBuf {
 }
 
 pub fn get_config_dir() -> PathBuf {
-    #[cfg(debug_assertions)]
-    match std::env::var("CARGO_MANIFEST_DIR") {
-        Ok(path) => return PathBuf::from(path).join("config"),
-        Err(e) => panic!("Failed to get cargo manifest dir: {}", e),
-    }
-
-    #[cfg(not(debug_assertions))]
     match dirs::config_dir() {
         Some(dir) => dir.join("tms"),
         None => get_exe_directory(),

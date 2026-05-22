@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use serde::Deserialize;
 
 use crate::app::AppError;
@@ -53,9 +55,18 @@ pub struct ProjectItemFileConfig {
     pub context_path: Option<String>,
 }
 
-pub fn load_config_file() -> Result<TmsFileConfig, AppError> {
-    let config_dir = super::get_config_dir();
-    let config_file = config_dir.clone().join(CONFIG_FILENAME);
+pub fn load_config_file(config_path: Option<PathBuf>) -> Result<TmsFileConfig, AppError> {
+    let (base_dir, config_file) = match config_path {
+        Some(path) => {
+            let dir = path.parent().map(|p| p.to_path_buf()).unwrap_or_else(super::get_config_dir);
+            (dir, path)
+        }
+        None => {
+            let dir = super::get_config_dir();
+            (dir.clone(), dir.join(CONFIG_FILENAME))
+        }
+    };
+
     if !config_file.exists() {
         return Err(AppError::Config(format!(
             "config file not found: {}",
@@ -74,7 +85,7 @@ pub fn load_config_file() -> Result<TmsFileConfig, AppError> {
     if let Some(includes) = &config.include {
         let projects = config.projects.as_mut().unwrap();
         for include in includes {
-            let include_file = config_dir.clone().join(include);
+            let include_file = base_dir.join(include);
             if !include_file.exists() {
                 return Err(AppError::Config(format!(
                     "include file not found: {}",
