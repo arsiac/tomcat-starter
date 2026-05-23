@@ -201,10 +201,10 @@ fn copy_tomcat_conf(tomcat_conf: &Path, cache_conf: &Path) -> Result<(), AppErro
                 }
                 let entry = entry.unwrap();
                 let entry_path = entry.path();
-                let filename = entry_path.file_name().unwrap();
-                if filename == app::constant::LOG_CONFIG_FILE {
+                if !entry_path.is_file() {
                     continue;
                 }
+                let filename = entry_path.file_name().unwrap();
                 let cache_path = cache_conf.join(filename);
                 log::debug!(
                     "Copy tomcat configuration file: {} -> {}",

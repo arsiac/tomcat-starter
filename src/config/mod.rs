@@ -25,5 +25,8 @@ pub fn get_config_dir() -> PathBuf {
 }
 
 pub fn get_cache_dir() -> PathBuf {
-    get_exe_directory().join("cache")
+    match dirs::cache_dir() {
+        Some(dir) => dir.join("tms"),
+        None => get_exe_directory().join("cache"),
+    }
 }

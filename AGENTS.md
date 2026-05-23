@@ -26,7 +26,7 @@ cargo build --release    # 发布构建
 - 配置文件: `{config_dir}/config.toml`，可通过 `-c, --config` 指定自定义路径
 - config_dir = `dirs::config_dir()/tms`（用户配置目录，debug/release 一致）
 - `tms -c <路径>` 测试时使用项目内配置，例如 `tms -c config/config.toml list`
-- 缓存目录: `{exe_dir}/cache/`
+- 缓存目录: `dirs::cache_dir()/tms`（用户缓存目录，debug/release 一致）
 - `include = ["path.toml"]` 支持导入其他 TOML，**仅合并 `[[project]]` 条目**，路径相对于配置文件所在目录
 - `[default.java]` 和 `[default.tomcat]` 是全局默认值（可被项目级 `[project.runtime.*]` 覆盖）
 - `java_home`/`tomcat_home` 未配置时回退到环境变量 `JAVA_HOME`/`CATALINA_HOME`
